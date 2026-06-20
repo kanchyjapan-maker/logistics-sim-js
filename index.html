@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>物流OS シミュレーター</title>
+  <title>LogiOS シミュレーター</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -63,13 +63,13 @@ header h1 { font-size: 18px; font-weight: 700; }
   display: inline-block; padding: 3px 10px; border-radius: 12px;
   font-size: 12px; font-weight: 700;
 }
-.badge-running { background: #1E40AF; color: white; }
-.badge-done    { background: #9CA3AF; color: white; }
-.badge-idle    { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
-.badge-plan    { background: #065F46; color: white; }
+.badge-running  { background: #1E40AF; color: white; }
+.badge-done     { background: #9CA3AF; color: white; }
+.badge-idle     { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
+.badge-plan     { background: #065F46; color: white; }
 .badge-complete { background: #D97706; color: white; }
 
-/* ── 物流OSタブ 2カラムレイアウト ── */
+/* ── LogiOSタブ 2カラムレイアウト ── */
 .os-layout {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -88,13 +88,10 @@ header h1 { font-size: 18px; font-weight: 700; }
   background: #F3F4F6; color: #6B7280;
   transition: background 0.2s, color 0.2s;
 }
-.flow-box.running { background: #1E40AF; color: white; border-color: #1E40AF; }
-.flow-box.done    { background: #9CA3AF; color: white; border-color: #9CA3AF; }
+.flow-box.running  { background: #1E40AF; color: white; border-color: #1E40AF; }
+.flow-box.done     { background: #9CA3AF; color: white; border-color: #9CA3AF; }
 .flow-box.planning { background: #065F46; color: white; border-color: #065F46; }
-.flow-arrow {
-  font-size: 20px; color: #9CA3AF; line-height: 1.4;
-  margin: 2px 0; text-align: center;
-}
+.flow-arrow { font-size: 20px; color: #9CA3AF; line-height: 1.4; margin: 2px 0; text-align: center; }
 
 /* ── 右パネル ── */
 .right-col { display: flex; flex-direction: column; gap: 12px; }
@@ -121,14 +118,12 @@ header h1 { font-size: 18px; font-weight: 700; }
 .cond-ok    { color: #065F46; font-weight: 700; }
 .cond-done  { color: #1E40AF; font-weight: 700; }
 
-/* 輸送プラン（参考）行 */
 .plan-mini { width: 100%; border-collapse: collapse; font-size: 12px; }
 .plan-mini td { padding: 4px 6px; border-bottom: 1px solid #F3F4F6; }
 .plan-mini tr:last-child td { border-bottom: none; }
 .plan-mini tr.current-leg td { background: #DBEAFE; font-weight: 700; color: #1E40AF; }
 .now-here { color: #D97706; font-weight: 700; font-size: 11px; }
 
-/* イベント履歴（右パネル） */
 .event-mini { list-style: none; max-height: 160px; overflow-y: auto; }
 .event-mini li { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dashed #E5E7EB; font-size: 12px; }
 .event-mini li:last-child { border-bottom: none; }
@@ -139,12 +134,23 @@ header h1 { font-size: 18px; font-weight: 700; }
 
 /* ── 各appタブ ── */
 .app-svg-wrap { text-align: center; margin: 8px 0 12px; }
-.app-svg-label { font-size: 12px; color: #6B7280; margin-top: 4px; }
 
 .app-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .app-info-item { background: #F3F4F6; border-radius: 6px; padding: 8px 12px; }
 .app-info-item .label { font-size: 11px; color: #6B7280; margin-bottom: 2px; }
 .app-info-item .value { font-size: 13px; font-weight: 600; word-break: break-all; }
+
+/* 発行IDカード（own_id を大きく・prev_refをその下に） */
+.id-card {
+  background: #F0FDF4; border: 1px solid #A7F3D0; border-radius: 8px; padding: 12px 14px;
+}
+.id-card .id-label { font-size: 11px; color: #065F46; font-weight: 700; margin-bottom: 4px; }
+.id-card .id-value {
+  font-family: monospace; font-size: 16px; font-weight: 800;
+  color: #065F46; word-break: break-all; margin-bottom: 8px;
+}
+.id-card .prev-label { font-size: 11px; color: #6B7280; margin-bottom: 2px; }
+.id-card .prev-value { font-family: monospace; font-size: 13px; color: #374151; word-break: break-all; }
 
 .data-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 6px; }
 .data-item { background: #F0FDF4; border-radius: 6px; padding: 6px 10px; border-left: 3px solid #059669; }
@@ -182,8 +188,10 @@ header h1 { font-size: 18px; font-weight: 700; }
 .log-table th { background: #F3F4F6; font-weight: 700; position: sticky; top: 0; z-index: 1; }
 .log-table tr:hover td { background: #F0F9FF; }
 .log-wrap { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
-.log-os  { color: #1E40AF; font-weight: 600; }
-.log-app { color: #065F46; }
+.log-os    { color: #1E40AF; font-weight: 600; }
+.log-app   { color: #065F46; }
+.log-ref   { font-family: monospace; font-size: 11px; color: #374151; }
+.log-ref-linked { color: #065F46; font-weight: 700; }
 
 @media (max-width: 600px) {
   .app-info-grid { grid-template-columns: 1fr; }
@@ -196,12 +204,12 @@ header h1 { font-size: 18px; font-weight: 700; }
 <body>
 
 <header>
-  <h1>🚚 物流OS シミュレーター（JS完結版）</h1>
+  <h1>🚚 LogiOS シミュレーター（JS完結版）</h1>
   <button id="restartBtn">🔄 リスタート</button>
 </header>
 
 <div class="tab-bar">
-  <button class="tab-btn active" data-tab="os">🗂️ 物流OS</button>
+  <button class="tab-btn active" data-tab="os">🗂️ LogiOS</button>
   <button class="tab-btn" data-tab="app01">①発荷主</button>
   <button class="tab-btn" data-tab="app02">②輸送</button>
   <button class="tab-btn" data-tab="app03">③発地ハブ</button>
@@ -251,6 +259,17 @@ const APP_LABELS = {
   app04: "④輸送(自動)", app05: "⑤着地ハブ", app06: "⑥輸送", app07: "⑦着荷主",
 };
 
+// 各主体の own_id のラベル（各主体は自社フォーマットのIDを使う）
+const APP_ID_LABELS = {
+  app01: "Shipment ID（発荷主フォーマット）",
+  app02: "Shipment ID（輸送業者Aフォーマット）",
+  app03: "Shipment ID（発地ハブフォーマット）",
+  app04: "Shipment ID（自動運転業者フォーマット）",
+  app05: "Shipment ID（着地ハブフォーマット）",
+  app06: "Shipment ID（輸送業者Bフォーマット）",
+  app07: "Shipment ID（着荷主フォーマット）",
+};
+
 // ═══════════════════════════════════════════════════
 // 状態変数
 // ═══════════════════════════════════════════════════
@@ -263,9 +282,9 @@ let simRunning   = false;
 
 // ポストプロセッシング用：現在実行中のleg情報を保持
 let rightPanel = {
-  instruction: null,  // 物流OSが送った指示オブジェクト
-  leg: null,          // 現在のlegオブジェクト
-  ownId: null,        // 現在のapp が発行したown_id
+  instruction: null,
+  leg: null,
+  ownId: null,
   ownIssued: false,
   reportDone: false,
 };
@@ -283,6 +302,8 @@ function randomAlpha(n) {
 function esc(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
+// 「→ SHP-001 ✓ 紐づけ済み」のリファレンス文字列
+function linkedRef(shipmentId) { return `→ ${shipmentId} ✓ 紐づけ済み`; }
 
 // ═══════════════════════════════════════════════════
 // 計画フェーズ
@@ -331,7 +352,7 @@ function genId07() { const d = new Date(); d.setDate(d.getDate() + 1); return `T
 function logExchange(app, eventName, shipmentId, extra = {}) {
   exchangeLog.push({ timestamp: nowTime(), app, event: eventName, shipment_id: shipmentId, ...extra });
   renderExchangeLogTab();
-  if (app !== "物流OS") renderAppTab(app);
+  if (app !== "LogiOS") renderAppTab(app);
   renderOsRightPanel();
 }
 
@@ -353,7 +374,13 @@ function logInstruction(targetApp, leg, prevRef, shipmentId) {
   rightPanel.ownIssued = false;
   rightPanel.reportDone = false;
 
-  exchangeLog.push({ ...inst, timestamp: inst.issued_at, app: "物流OS", event: `${APP_LABELS[targetApp]}へ指示送信` });
+  exchangeLog.push({
+    ...inst,
+    timestamp: inst.issued_at,
+    app: "LogiOS",
+    event: `${APP_LABELS[targetApp]}へ指示送信`,
+    logi_ref: shipmentId,       // LogiOS内部の共通ID
+  });
   renderExchangeLogTab();
   return inst;
 }
@@ -370,20 +397,20 @@ function resetChain() { idChain = { shipment_id: null, id_chain: [] }; }
 
 // ═══════════════════════════════════════════════════
 // 各 app 実行
+// logi_ref: own_id → （完了時）「→ SHP-001 ✓ 紐づけ済み」
 // ═══════════════════════════════════════════════════
 async function runApp01() {
   const ownId = genId01();
-  logExchange("app01", "出荷準備完了", SHIPMENT_MASTER.shipment_id, {
-    own_id: ownId,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    quantity: SHIPMENT_MASTER.quantity,
-    status: "OK",
+  const sid = SHIPMENT_MASTER.shipment_id;
+  logExchange("app01", "出荷準備完了", sid, {
+    own_id: ownId, weight_kg: SHIPMENT_MASTER.weight_kg,
+    quantity: SHIPMENT_MASTER.quantity, status: "OK",
+    logi_ref: ownId,
   });
   await wait(3000);
-  logExchange("app01", "出荷完了", SHIPMENT_MASTER.shipment_id, {
-    own_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    status: "OK",
+  logExchange("app01", "出荷完了", sid, {
+    own_id: ownId, quantity: SHIPMENT_MASTER.quantity, status: "OK",
+    logi_ref: linkedRef(sid),
   });
   return { ...SHIPMENT_MASTER, own_id: ownId, prev_ref: null };
 }
@@ -391,118 +418,121 @@ async function runApp01() {
 // 輸送系（②）
 async function runApp02(instruction) {
   const ownId = genId02();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app02", "受取（輸送開始）", instruction.shipment_id, {
+  logExchange("app02", "受取（輸送開始）", sid, {
     carrier_id: ownId,
     leg_info: `${instruction.from_location}→${instruction.to_location}（一般道・非自動運転）`,
     quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app02", "引渡（輸送終了）", instruction.shipment_id, {
-    carrier_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
+  logExchange("app02", "引渡（輸送終了）", sid, {
+    carrier_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app02", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app02", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 // ハブ系（③）
 async function runApp03(instruction) {
   const ownId = genId03();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app03", "受取", instruction.shipment_id, {
-    hub_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app03", "受取", sid, {
+    hub_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app03", "出荷準備完了", instruction.shipment_id, {
-    hub_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app03", "出荷準備完了", sid, {
+    hub_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app03", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app03", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 // 輸送系（④ 自動運転）
 async function runApp04(instruction) {
   const ownId = genId04();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app04", "受取（輸送開始）", instruction.shipment_id, {
+  logExchange("app04", "受取（輸送開始）", sid, {
     carrier_id: ownId,
     leg_info: `${instruction.from_location}→${instruction.to_location}（高速道路・自動運転）`,
     quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app04", "引渡（輸送終了）", instruction.shipment_id, {
-    carrier_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
+  logExchange("app04", "引渡（輸送終了）", sid, {
+    carrier_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app04", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app04", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 // ハブ系（⑤）
 async function runApp05(instruction) {
   const ownId = genId05();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app05", "受取", instruction.shipment_id, {
-    hub_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app05", "受取", sid, {
+    hub_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app05", "出荷準備完了", instruction.shipment_id, {
-    hub_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app05", "出荷準備完了", sid, {
+    hub_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app05", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app05", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 // 輸送系（⑥）
 async function runApp06(instruction) {
   const ownId = genId06();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app06", "受取（輸送開始）", instruction.shipment_id, {
+  logExchange("app06", "受取（輸送開始）", sid, {
     carrier_id: ownId,
     leg_info: `${instruction.from_location}→${instruction.to_location}（一般道・非自動運転）`,
     quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app06", "引渡（輸送終了）", instruction.shipment_id, {
-    carrier_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
+  logExchange("app06", "引渡（輸送終了）", sid, {
+    carrier_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app06", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app06", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 // 着荷主（⑦）
 async function runApp07(instruction) {
   const ownId = genId07();
+  const sid = instruction.shipment_id;
   rightPanel.ownId = ownId; rightPanel.ownIssued = true;
-  logExchange("app07", "受取", instruction.shipment_id, {
-    receiver_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app07", "受取", sid, {
+    receiver_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: ownId,
   });
   await wait(3000);
   rightPanel.reportDone = true;
-  logExchange("app07", "納品完了", instruction.shipment_id, {
-    receiver_id: ownId,
-    quantity: SHIPMENT_MASTER.quantity,
-    weight_kg: SHIPMENT_MASTER.weight_kg,
-    status: "OK",
+  logExchange("app07", "納品完了", sid, {
+    receiver_id: ownId, quantity: SHIPMENT_MASTER.quantity,
+    weight_kg: SHIPMENT_MASTER.weight_kg, status: "OK",
+    logi_ref: linkedRef(sid),
   });
-  return { app: "app07", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: instruction.shipment_id, completed_at: new Date().toISOString() };
+  return { app: "app07", own_id: ownId, prev_ref: instruction.prev_ref, shipment_id: sid, completed_at: new Date().toISOString() };
 }
 
 const APP_RUNNERS = { app02: runApp02, app03: runApp03, app04: runApp04, app05: runApp05, app06: runApp06, app07: runApp07 };
@@ -522,7 +552,10 @@ async function runSimulation() {
   setState("OS_PLANNING");
   await wait(500);
   currentPlan = createPlan(shipment);
-  logExchange("物流OS", `輸送プラン作成完了（合計${currentPlan.total_estimated_minutes}分）`, shipment.shipment_id, { plan_id: currentPlan.plan_id });
+  logExchange("LogiOS", `輸送プラン作成完了（合計${currentPlan.total_estimated_minutes}分）`, shipment.shipment_id, {
+    plan_id: currentPlan.plan_id,
+    logi_ref: shipment.shipment_id,
+  });
   setState("OS_PLAN_READY");
   await wait(500);
 
@@ -545,7 +578,7 @@ async function runSimulation() {
     renderOsTab();
   }
 
-  // app07（着荷主）は ROUTES_MASTER に含まれないので明示的に実行
+  // app07（着荷主）は ROUTES_MASTER 外なので明示的に実行
   const app07Leg = { leg_id: "LEG-07", from: "東京都港区芝公園4-2-8", to: "東京都港区芝公園4-2-8（東京タワー）" };
   setState("OS_INSTRUCTING_APP07");
   const app07Instruction = logInstruction("app07", app07Leg, prevRef, shipment.shipment_id);
@@ -574,175 +607,108 @@ function setState(s) {
 // SVG 簡略図
 // ═══════════════════════════════════════════════════
 const APP_SVG = {
-  // ①発荷主（通天閣）
   app01: `<svg width="180" height="110" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 地面 -->
     <rect x="0" y="98" width="180" height="4" fill="#D1D5DB" rx="2"/>
-    <!-- 塔の基部 -->
     <rect x="72" y="70" width="36" height="28" fill="#6B7280"/>
-    <!-- 展望台 -->
     <rect x="62" y="56" width="56" height="16" fill="#4B5563" rx="2"/>
-    <!-- 塔中段 -->
     <rect x="80" y="30" width="20" height="28" fill="#6B7280"/>
-    <!-- 塔上部 -->
     <polygon points="90,6 80,30 100,30" fill="#374151"/>
-    <!-- 展望台窓 -->
     <rect x="68" y="60" width="10" height="8" fill="#BFDBFE" rx="1"/>
     <rect x="84" y="60" width="10" height="8" fill="#BFDBFE" rx="1"/>
     <rect x="102" y="60" width="10" height="8" fill="#BFDBFE" rx="1"/>
-    <!-- 基部扉 -->
     <rect x="83" y="82" width="14" height="16" fill="#374151" rx="1"/>
+    <text x="90" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">通天閣</text>
   </svg>`,
 
-  // ②輸送（非自動運転・一般道）
   app02: `<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 道路 -->
     <rect x="0" y="86" width="200" height="18" fill="#9CA3AF"/>
     <line x1="0" y1="95" x2="200" y2="95" stroke="white" stroke-width="2" stroke-dasharray="16,10"/>
-    <!-- 荷台 -->
     <rect x="18" y="52" width="80" height="36" fill="#3B82F6" rx="3"/>
-    <!-- キャビン -->
     <rect x="98" y="60" width="40" height="28" fill="#2563EB" rx="3"/>
-    <!-- フロントガラス -->
     <rect x="102" y="63" width="28" height="16" fill="#BFDBFE" rx="1"/>
-    <!-- ドライバー -->
     <circle cx="116" cy="69" r="4" fill="#FCD34D"/>
-    <!-- ホイール -->
-    <circle cx="42" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="42" cy="88" r="4" fill="#6B7280"/>
-    <circle cx="80" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="80" cy="88" r="4" fill="#6B7280"/>
-    <circle cx="122" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="122" cy="88" r="4" fill="#6B7280"/>
-    <!-- 信号 -->
+    <circle cx="42" cy="88" r="9" fill="#1F2937"/><circle cx="42" cy="88" r="4" fill="#6B7280"/>
+    <circle cx="80" cy="88" r="9" fill="#1F2937"/><circle cx="80" cy="88" r="4" fill="#6B7280"/>
+    <circle cx="122" cy="88" r="9" fill="#1F2937"/><circle cx="122" cy="88" r="4" fill="#6B7280"/>
     <rect x="168" y="30" width="14" height="36" fill="#374151" rx="2"/>
     <circle cx="175" cy="40" r="5" fill="#DC2626"/>
     <circle cx="175" cy="52" r="5" fill="#FCD34D"/>
     <circle cx="175" cy="64" r="5" fill="#22C55E"/>
     <line x1="175" y1="66" x2="175" y2="86" stroke="#374151" stroke-width="3"/>
+    <text x="65" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">通天閣 → 草津田上IC（一般道）</text>
   </svg>`,
 
-  // ③発地ハブ（倉庫）
   app03: `<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 地面 -->
     <rect x="0" y="100" width="200" height="4" fill="#D1D5DB" rx="2"/>
-    <!-- 屋根 -->
     <polygon points="10,48 190,48 200,65 0,65" fill="#4B5563"/>
-    <!-- 建物本体 -->
     <rect x="5" y="65" width="190" height="35" fill="#9CA3AF"/>
-    <!-- 大扉 -->
     <rect x="72" y="72" width="56" height="28" fill="#4B5563" rx="1"/>
     <line x1="100" y1="72" x2="100" y2="100" stroke="#6B7280" stroke-width="2"/>
-    <!-- 窓 -->
     <rect x="18" y="72" width="36" height="20" fill="#BFDBFE" rx="1"/>
     <rect x="146" y="72" width="36" height="20" fill="#BFDBFE" rx="1"/>
-    <!-- 屋根装飾 -->
     <rect x="90" y="38" width="20" height="12" fill="#374151"/>
-    <!-- ラベル -->
-    <text x="100" y="42" font-size="7" fill="white" text-anchor="middle" font-family="sans-serif">草津田上IC</text>
+    <text x="100" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">草津田上IC（発地ハブ）</text>
   </svg>`,
 
-  // ④輸送（自動運転・高速道路）
   app04: `<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 高速道路（2車線） -->
     <rect x="0" y="82" width="200" height="22" fill="#6B7280"/>
     <line x1="0" y1="93" x2="200" y2="93" stroke="white" stroke-width="2" stroke-dasharray="20,10"/>
-    <!-- ガードレール -->
     <rect x="0" y="80" width="200" height="3" fill="#D1D5DB"/>
-    <!-- 荷台 -->
     <rect x="18" y="48" width="82" height="36" fill="#059669" rx="3"/>
-    <!-- AUTO バッジ -->
     <rect x="30" y="55" width="40" height="16" fill="#065F46" rx="3"/>
     <text x="50" y="67" font-size="9" fill="white" font-weight="bold" text-anchor="middle" font-family="sans-serif">AUTO</text>
-    <!-- キャビン（無人） -->
     <rect x="100" y="56" width="42" height="28" fill="#047857" rx="3"/>
-    <!-- フロントガラス（AIアイコン的） -->
     <rect x="104" y="59" width="30" height="16" fill="#BFDBFE" rx="1"/>
     <text x="119" y="71" font-size="8" fill="#1E40AF" text-anchor="middle" font-family="sans-serif">AI</text>
-    <!-- ホイール -->
-    <circle cx="42" cy="84" r="9" fill="#1F2937"/>
-    <circle cx="42" cy="84" r="4" fill="#6B7280"/>
-    <circle cx="82" cy="84" r="9" fill="#1F2937"/>
-    <circle cx="82" cy="84" r="4" fill="#6B7280"/>
-    <circle cx="122" cy="84" r="9" fill="#1F2937"/>
-    <circle cx="122" cy="84" r="4" fill="#6B7280"/>
+    <circle cx="42" cy="84" r="9" fill="#1F2937"/><circle cx="42" cy="84" r="4" fill="#6B7280"/>
+    <circle cx="82" cy="84" r="9" fill="#1F2937"/><circle cx="82" cy="84" r="4" fill="#6B7280"/>
+    <circle cx="122" cy="84" r="9" fill="#1F2937"/><circle cx="122" cy="84" r="4" fill="#6B7280"/>
+    <text x="70" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">草津田上IC → 綾瀬IC（高速・自動運転）</text>
   </svg>`,
 
-  // ⑤着地ハブ（倉庫）
   app05: `<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 地面 -->
     <rect x="0" y="100" width="200" height="4" fill="#D1D5DB" rx="2"/>
-    <!-- 屋根 -->
     <polygon points="10,48 190,48 200,65 0,65" fill="#4B5563"/>
-    <!-- 建物本体 -->
     <rect x="5" y="65" width="190" height="35" fill="#9CA3AF"/>
-    <!-- 大扉 -->
     <rect x="72" y="72" width="56" height="28" fill="#4B5563" rx="1"/>
     <line x1="100" y1="72" x2="100" y2="100" stroke="#6B7280" stroke-width="2"/>
-    <!-- 窓 -->
     <rect x="18" y="72" width="36" height="20" fill="#BFDBFE" rx="1"/>
     <rect x="146" y="72" width="36" height="20" fill="#BFDBFE" rx="1"/>
-    <!-- 屋根装飾 -->
     <rect x="90" y="38" width="20" height="12" fill="#374151"/>
-    <!-- ラベル -->
-    <text x="100" y="42" font-size="7" fill="white" text-anchor="middle" font-family="sans-serif">綾瀬IC</text>
+    <text x="100" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">綾瀬IC（着地ハブ）</text>
   </svg>`,
 
-  // ⑥輸送（非自動運転・一般道）
   app06: `<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 道路 -->
     <rect x="0" y="86" width="200" height="18" fill="#9CA3AF"/>
     <line x1="0" y1="95" x2="200" y2="95" stroke="white" stroke-width="2" stroke-dasharray="16,10"/>
-    <!-- 荷台 -->
     <rect x="18" y="52" width="80" height="36" fill="#8B5CF6" rx="3"/>
-    <!-- キャビン -->
     <rect x="98" y="60" width="40" height="28" fill="#7C3AED" rx="3"/>
-    <!-- フロントガラス -->
     <rect x="102" y="63" width="28" height="16" fill="#BFDBFE" rx="1"/>
-    <!-- ドライバー -->
     <circle cx="116" cy="69" r="4" fill="#FCD34D"/>
-    <!-- ホイール -->
-    <circle cx="42" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="42" cy="88" r="4" fill="#6B7280"/>
-    <circle cx="80" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="80" cy="88" r="4" fill="#6B7280"/>
-    <circle cx="122" cy="88" r="9" fill="#1F2937"/>
-    <circle cx="122" cy="88" r="4" fill="#6B7280"/>
-    <!-- 住宅（東京近郊イメージ） -->
-    <polygon points="162,50 150,66 174,66" fill="#6B7280"/>
-    <rect x="154" y="66" width="16" height="18" fill="#9CA3AF"/>
+    <circle cx="42" cy="88" r="9" fill="#1F2937"/><circle cx="42" cy="88" r="4" fill="#6B7280"/>
+    <circle cx="80" cy="88" r="9" fill="#1F2937"/><circle cx="80" cy="88" r="4" fill="#6B7280"/>
+    <circle cx="122" cy="88" r="9" fill="#1F2937"/><circle cx="122" cy="88" r="4" fill="#6B7280"/>
+    <text x="65" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">綾瀬IC → 東京タワー（一般道）</text>
   </svg>`,
 
-  // ⑦着荷主（東京タワー）
   app07: `<svg width="180" height="110" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg">
-    <!-- 地面 -->
     <rect x="0" y="100" width="180" height="4" fill="#D1D5DB" rx="2"/>
-    <!-- 東京タワー型 -->
-    <!-- 外脚（左） -->
     <polygon points="50,100 66,100 76,42 60,42" fill="#F97316"/>
-    <!-- 外脚（右） -->
     <polygon points="114,100 130,100 120,42 104,42" fill="#F97316"/>
-    <!-- 展望台 -->
     <rect x="60" y="38" width="60" height="10" fill="#EA580C" rx="1"/>
-    <!-- 中段タワー -->
     <rect x="70" y="22" width="40" height="18" fill="#F97316"/>
-    <!-- 第2展望台 -->
     <rect x="68" y="18" width="44" height="6" fill="#EA580C" rx="1"/>
-    <!-- 先端 -->
     <polygon points="90,2 80,18 100,18" fill="#F97316"/>
-    <!-- 白ライン -->
     <rect x="60" y="42" width="60" height="3" fill="white" opacity="0.6"/>
     <rect x="70" y="26" width="40" height="2" fill="white" opacity="0.6"/>
-    <!-- ラベル -->
-    <text x="90" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">東京タワー</text>
+    <text x="90" y="108" font-size="9" fill="#6B7280" text-anchor="middle" font-family="sans-serif">東京タワー（着荷主）</text>
   </svg>`,
 };
 
 // ═══════════════════════════════════════════════════
-// 物流OSタブ：フロー図（左カラム）
+// LogiOSタブ：フロー図（左カラム）
 // ═══════════════════════════════════════════════════
 function getFlowBoxClass(boxType) {
-  // boxType: "app01","planning","app02"...
   if (boxType === "planning") {
     if (currentState === "OS_PLANNING" || currentState === "OS_PLAN_READY") return "planning";
     if (isAfterApp("app01")) return "done";
@@ -757,7 +723,7 @@ function getFlowBoxClass(boxType) {
 function buildFlowHtml() {
   const steps = [
     { key: "app01",    label: "① 発荷主（通天閣）" },
-    { key: "planning", label: "物流OS：計画作成" },
+    { key: "planning", label: "LogiOS：計画作成" },
     { key: "app02",    label: "② 輸送（一般道）" },
     { key: "app03",    label: "③ 発地ハブ（草津）" },
     { key: "app04",    label: "④ 輸送（自動運転）" },
@@ -773,13 +739,11 @@ function buildFlowHtml() {
 }
 
 // ═══════════════════════════════════════════════════
-// 物流OSタブ：右パネル
+// LogiOSタブ：右パネル
 // ═══════════════════════════════════════════════════
 function buildRightPanelHtml() {
-  // ■ 現在の状態
-  let stateLabel = getStateLabelHtml(currentState);
+  const stateLabel = getStateLabelHtml(currentState);
 
-  // ■ 入力変数
   let varHtml = `<p style="color:#9CA3AF;font-size:12px">指示送信後に表示されます</p>`;
   if (rightPanel.instruction) {
     const inst = rightPanel.instruction;
@@ -792,7 +756,6 @@ function buildRightPanelHtml() {
     </div>`;
   }
 
-  // ■ 遷移条件
   let condHtml;
   if (!rightPanel.instruction) {
     condHtml = `<div class="cond-row"><span class="cond-label">own_id 発行</span><span class="cond-wait">— 待機中</span></div>
@@ -808,7 +771,6 @@ function buildRightPanelHtml() {
                 <div class="cond-row"><span class="cond-label">完了報告</span>${rptStatus}</div>`;
   }
 
-  // ■ 輸送プラン（参考）
   let planHtml = `<p style="color:#9CA3AF;font-size:12px">計画フェーズ完了後に表示されます</p>`;
   if (currentPlan) {
     const h = Math.floor(currentPlan.total_estimated_minutes / 60);
@@ -824,14 +786,13 @@ function buildRightPanelHtml() {
       <p style="margin-top:6px;font-size:11px;color:#1E3A5F;font-weight:700">合計: ${currentPlan.total_estimated_minutes}分（${h}時間${m}分）</p>`;
   }
 
-  // ■ 直近イベント履歴（新しい順、最大10件）
   let evtHtml;
   if (!exchangeLog.length) {
     evtHtml = `<p style="color:#9CA3AF;font-size:12px">まだイベントはありません</p>`;
   } else {
     const recent = [...exchangeLog].reverse().slice(0, 10);
     const lis = recent.map(e => {
-      const cls = e.app === "物流OS" ? "ea-os" : "ea-app";
+      const cls = e.app === "LogiOS" ? "ea-os" : "ea-app";
       return `<li><span class="et">${esc(e.timestamp)}</span><span class="ea ${cls}">${esc(e.app)}</span><span>${esc(e.event)}</span></li>`;
     }).join("");
     evtHtml = `<ul class="event-mini">${lis}</ul>`;
@@ -861,7 +822,6 @@ function buildRightPanelHtml() {
 }
 
 function renderOsRightPanel() {
-  // 右パネルだけ更新（フロー図は変えない）
   const rp = document.getElementById("os-right-panel");
   if (rp) rp.innerHTML = buildRightPanelHtml();
 }
@@ -922,31 +882,33 @@ function renderAppTab(appKey) {
   else if (report)
     statusBadge = `<span class="badge badge-done">完了 ✅</span>`;
 
-  // ■ 発行ID
+  // ■ 発行ID（shipment_idは表示しない。own_idを各主体のフォーマットラベルで表示）
+  const idLabel = APP_ID_LABELS[appKey] || "Shipment ID";
   const reportHtml = report ? `
     <div class="card">
       <h3>■ 発行ID</h3>
-      <div class="app-info-grid">
-        <div class="app-info-item"><div class="label">own_id</div><div class="value" style="font-family:monospace;color:#065F46">${esc(report.own_id)}</div></div>
-        <div class="app-info-item"><div class="label">prev_ref</div><div class="value" style="font-family:monospace;color:#6B7280">${esc(report.prev_ref || "(起点)")}</div></div>
-        <div class="app-info-item"><div class="label">shipment_id</div><div class="value" style="font-family:monospace">${esc(report.shipment_id)}</div></div>
-        ${report.completed_at ? `<div class="app-info-item"><div class="label">完了時刻</div><div class="value">${new Date(report.completed_at).toLocaleTimeString("ja-JP")}</div></div>` : ""}
+      <div class="id-card">
+        <div class="id-label">${esc(idLabel)}</div>
+        <div class="id-value">${esc(report.own_id)}</div>
+        <div class="prev-label">prev_ref（直前主体から受け取った参照）</div>
+        <div class="prev-value">${esc(report.prev_ref || "（なし、起点）")}</div>
       </div>
+      ${report.completed_at ? `<p style="font-size:11px;color:#9CA3AF;margin-top:8px">完了時刻: ${new Date(report.completed_at).toLocaleTimeString("ja-JP")}</p>` : ""}
     </div>` : "";
 
-  // ■ 物流OSに渡したデータ（最初のイベントから extraフィールドを表示）
-  const dataEvents = logs.filter(l => l.quantity !== undefined || l.weight_kg !== undefined || l.status !== undefined || l.carrier_id !== undefined || l.receiver_id !== undefined || l.leg_info !== undefined);
+  // ■ LogiOSに渡したデータ（quantity, weight_kg, status, leg_info など）
+  const dataEvents = logs.filter(l =>
+    l.quantity !== undefined || l.weight_kg !== undefined ||
+    l.status !== undefined || l.leg_info !== undefined
+  );
   let dataHtml = "";
   if (dataEvents.length > 0) {
-    const latestData = dataEvents[dataEvents.length - 1];
+    const d = dataEvents[dataEvents.length - 1];
     const fields = [];
-    if (latestData.quantity   !== undefined) fields.push({ label: "個数", value: latestData.quantity + " 個" });
-    if (latestData.weight_kg  !== undefined) fields.push({ label: "重量", value: latestData.weight_kg + " kg" });
-    if (latestData.status     !== undefined) fields.push({ label: "状態", value: latestData.status, cls: latestData.status === "OK" ? "data-status-ok" : "data-status-ng" });
-    if (latestData.leg_info   !== undefined) fields.push({ label: "区間", value: latestData.leg_info });
-    if (latestData.carrier_id !== undefined) fields.push({ label: "carrier_id", value: latestData.carrier_id });
-    if (latestData.receiver_id !== undefined) fields.push({ label: "receiver_id", value: latestData.receiver_id });
-
+    if (d.quantity  !== undefined) fields.push({ label: "個数",    value: d.quantity + " 個" });
+    if (d.weight_kg !== undefined) fields.push({ label: "重量",    value: d.weight_kg + " kg" });
+    if (d.status    !== undefined) fields.push({ label: "状態",    value: d.status, cls: d.status === "OK" ? "data-status-ok" : "data-status-ng" });
+    if (d.leg_info  !== undefined) fields.push({ label: "区間",    value: d.leg_info });
     const cells = fields.map(f => `
       <div class="data-item">
         <div class="label">${esc(f.label)}</div>
@@ -954,7 +916,7 @@ function renderAppTab(appKey) {
       </div>`).join("");
     dataHtml = `
       <div class="card">
-        <h3>■ 物流OSに渡したデータ</h3>
+        <h3>■ LogiOSに渡したデータ</h3>
         <div class="data-grid">${cells}</div>
       </div>`;
   }
@@ -1009,17 +971,20 @@ function renderIdChainTab() {
   el.innerHTML = `
     <div class="card">
       <h2>🔗 名寄せ台帳（バケツリレー型参照チェーン）</h2>
-      <p style="margin-bottom:12px;color:#6B7280;font-size:13px">shipment_id: <strong>${esc(idChain.shipment_id)}</strong></p>
+      <p style="margin-bottom:6px;color:#6B7280;font-size:13px">
+        共通キー（LogiOS内部）: <strong style="font-family:monospace">${esc(idChain.shipment_id)}</strong>
+      </p>
       <p style="margin-bottom:14px;font-size:12px;color:#374151;line-height:1.6">
-        各主体が異なるフォーマットのIDを使いながら、<strong>prev_ref（前工程参照）</strong>を
-        バケツリレーすることで①→⑦まで追跡可能にする構造です。
+        各主体は<strong>自社フォーマットのID</strong>を使いながら、
+        <strong>prev_ref（直前主体からの参照）</strong>をバケツリレーすることで
+        ①→⑦まで追跡可能。LogiOSはこの連鎖をたどってshipment_idまで遡れる。
       </p>
       ${items}
     </div>`;
 }
 
 // ═══════════════════════════════════════════════════
-// 全体ログ
+// 全体ログ（LogiOS内部参照列あり）
 // ═══════════════════════════════════════════════════
 function renderExchangeLogTab() {
   const el = document.getElementById("tab-log-content");
@@ -1028,19 +993,40 @@ function renderExchangeLogTab() {
     el.innerHTML = `<div class="card"><p style="color:#9CA3AF">ログはまだありません。</p></div>`;
     return;
   }
+
   const rows = exchangeLog.map(e => {
-    const isOs = e.app === "物流OS";
+    const isOs = e.app === "LogiOS";
+    const appCls = isOs ? "log-os" : "log-app";
+
+    // LogiOS内部参照列
+    let refHtml = "";
+    if (e.logi_ref) {
+      const isLinked = String(e.logi_ref).includes("✓ 紐づけ済み");
+      refHtml = `<span class="${isLinked ? "log-ref-linked" : "log-ref"}">${esc(e.logi_ref)}</span>`;
+    }
+
     return `<tr>
       <td>${esc(e.timestamp)}</td>
-      <td class="${isOs ? "log-os" : "log-app"}">${esc(e.app)}</td>
+      <td class="${appCls}">${esc(e.app)}</td>
       <td>${esc(e.event)}</td>
-      <td>${esc(e.shipment_id || "")}</td>
+      <td>${refHtml}</td>
     </tr>`;
   }).join("");
+
   el.innerHTML = `
+    <div style="margin-bottom:8px;font-size:12px;color:#6B7280;padding:0 2px">
+      💡 このタブはLogiOSの視点。各主体の独自IDがどの共通Shipment IDに紐づくかを追跡できます。
+    </div>
     <div class="log-wrap">
       <table class="log-table">
-        <thead><tr><th>時刻</th><th>アプリ</th><th>イベント</th><th>Shipment ID</th></tr></thead>
+        <thead>
+          <tr>
+            <th>時刻</th>
+            <th>アプリ</th>
+            <th>イベント</th>
+            <th>LogiOS内部参照</th>
+          </tr>
+        </thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
@@ -1059,11 +1045,11 @@ function switchTab(tabId) {
 }
 
 function restart() {
-  simRunning = false;
-  exchangeLog = [];
-  appReports  = {};
-  currentPlan = null;
-  rightPanel  = { instruction: null, leg: null, ownId: null, ownIssued: false, reportDone: false };
+  simRunning   = false;
+  exchangeLog  = [];
+  appReports   = {};
+  currentPlan  = null;
+  rightPanel   = { instruction: null, leg: null, ownId: null, ownIssued: false, reportDone: false };
   resetChain();
   currentState = "IDLE";
   renderOsTab();
