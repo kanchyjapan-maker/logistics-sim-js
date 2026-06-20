@@ -1,0 +1,186 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  background: #F9FAFB;
+  color: #111827;
+}
+
+header {
+  background: #1E3A5F;
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+header h1 { font-size: 18px; font-weight: 700; }
+
+#restartBtn {
+  background: #F59E0B;
+  color: #111;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+#restartBtn:hover { background: #D97706; }
+
+/* タブ */
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px 0;
+  background: #E5E7EB;
+  border-bottom: 2px solid #D1D5DB;
+}
+
+.tab-btn {
+  padding: 7px 12px;
+  border: none;
+  background: #D1D5DB;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-size: 13px;
+  color: #374151;
+}
+.tab-btn:hover { background: #9CA3AF; color: white; }
+.tab-btn.active { background: white; color: #1E3A5F; font-weight: 700; border-bottom: 2px solid white; }
+
+.tab-content { display: none; padding: 16px; }
+.tab-content.active { display: block; }
+
+/* カード */
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.card h2 { font-size: 16px; margin-bottom: 10px; color: #1E3A5F; }
+.card h3 { font-size: 14px; margin-bottom: 8px; color: #374151; }
+
+/* 状態バッジ */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-running { background: #1E40AF; color: white; }
+.badge-done    { background: #9CA3AF; color: white; }
+.badge-idle    { background: #F3F4F6; color: #6B7280; border: 1px solid #D1D5DB; }
+.badge-plan    { background: #065F46; color: white; }
+
+/* 進行状況バー */
+.progress-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.prog-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.prog-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid #D1D5DB;
+  background: #F3F4F6;
+  color: #6B7280;
+}
+.prog-circle.running { background: #1E40AF; color: white; border-color: #1E40AF; }
+.prog-circle.done    { background: #9CA3AF; color: white; border-color: #9CA3AF; }
+.prog-arrow { font-size: 18px; color: #9CA3AF; margin-top: -4px; }
+.prog-label { font-size: 10px; color: #6B7280; }
+
+/* プランテーブル */
+.plan-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.plan-table th, .plan-table td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 13px;
+}
+.plan-table th { background: #F3F4F6; font-weight: 700; color: #374151; }
+.plan-table tr:last-child td { border-bottom: none; }
+.plan-total { font-weight: 700; color: #1E3A5F; margin-top: 8px; font-size: 14px; }
+
+/* 各appタブ */
+.app-icon { font-size: 36px; text-align: center; margin-bottom: 8px; }
+.app-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.app-info-item { background: #F3F4F6; border-radius: 6px; padding: 8px 12px; }
+.app-info-item .label { font-size: 11px; color: #6B7280; margin-bottom: 2px; }
+.app-info-item .value { font-size: 13px; font-weight: 600; }
+
+.event-list { list-style: none; margin-top: 8px; }
+.event-list li {
+  padding: 5px 0;
+  border-bottom: 1px dashed #E5E7EB;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+}
+.event-list li:last-child { border-bottom: none; }
+.event-time { color: #9CA3AF; min-width: 70px; }
+.event-text { color: #111827; }
+
+/* 名寄せ台帳 */
+.chain-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  border-left: 4px solid #1E40AF;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 6px;
+}
+.chain-arrow {
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 18px;
+  margin: 2px 0;
+}
+.chain-app { font-weight: 700; min-width: 80px; color: #1E3A5F; }
+.chain-ids { font-size: 12px; color: #374151; font-family: monospace; }
+.chain-own { color: #065F46; font-weight: 700; }
+.chain-prev { color: #6B7280; }
+
+/* 全体ログ */
+.log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.log-table th, .log-table td {
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.log-table th { background: #F3F4F6; font-weight: 700; position: sticky; top: 0; }
+.log-table tr:hover td { background: #F0F9FF; }
+.log-wrap { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+
+.log-os   { color: #1E40AF; font-weight: 600; }
+.log-app  { color: #065F46; }
+
+/* レスポンシブ */
+@media (max-width: 600px) {
+  .app-info-grid { grid-template-columns: 1fr; }
+  .tab-btn { font-size: 11px; padding: 5px 8px; }
+}

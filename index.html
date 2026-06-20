@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物流OS シミュレーター</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>🚚 物流OS シミュレーター（JS完結版）</h1>
+  <button id="restartBtn">🔄 リスタート</button>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="os">🗂️ 物流OS</button>
+  <button class="tab-btn" data-tab="app01">①発荷主</button>
+  <button class="tab-btn" data-tab="app02">②輸送</button>
+  <button class="tab-btn" data-tab="app03">③発地ハブ</button>
+  <button class="tab-btn" data-tab="app04">④輸送(自動)</button>
+  <button class="tab-btn" data-tab="app05">⑤着地ハブ</button>
+  <button class="tab-btn" data-tab="app06">⑥輸送</button>
+  <button class="tab-btn" data-tab="app07">⑦着荷主</button>
+  <button class="tab-btn" data-tab="chain">🔗 名寄せ台帳</button>
+  <button class="tab-btn" data-tab="log">📋 全体ログ</button>
+</div>
+
+<div id="tab-os-content"     class="tab-content active"></div>
+<div id="tab-app01-content"  class="tab-content"></div>
+<div id="tab-app02-content"  class="tab-content"></div>
+<div id="tab-app03-content"  class="tab-content"></div>
+<div id="tab-app04-content"  class="tab-content"></div>
+<div id="tab-app05-content"  class="tab-content"></div>
+<div id="tab-app06-content"  class="tab-content"></div>
+<div id="tab-app07-content"  class="tab-content"></div>
+<div id="tab-chain-content"  class="tab-content"></div>
+<div id="tab-log-content"    class="tab-content"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
