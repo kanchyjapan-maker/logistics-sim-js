@@ -311,6 +311,7 @@ let idChain      = { shipment_id: null, id_chain: [] };
 let currentPlan  = null;
 let appReports   = {};
 let simRunning   = false;
+let simGen       = 0;   // キャンセル用世代カウンタ
 
 let rightPanel = {
   instruction: null,
@@ -323,7 +324,15 @@ let rightPanel = {
 // ═══════════════════════════════════════════════════
 // ユーティリティ
 // ═══════════════════════════════════════════════════
-function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+function wait(ms) {
+  const gen = simGen;
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (simGen !== gen) { const e = new Error("cancelled"); e.cancelled = true; reject(e); }
+      else resolve();
+    }, ms);
+  });
+}
 function nowTime() { return new Date().toLocaleTimeString("ja-JP"); }
 function yyyymmdd(d) { return d.toISOString().slice(0, 10).replace(/-/g, ""); }
 function formatDateForId(date) {
@@ -458,15 +467,17 @@ function onAppCompleted(report) {
 async function runApp01() {
   const ownId = genId01();
   const sid = SHIPMENT_MASTER.shipment_id;
+  const report = { ...SHIPMENT_MASTER, app: "app01", own_id: ownId, prev_ref: null };
   logExchange("app01", "出荷準備完了", sid, {
     own_id: ownId, weight_kg: SHIPMENT_MASTER.weight_kg,
     quantity: SHIPMENT_MASTER.quantity, status: "OK",
   });
+  onAppCompleted(report);  // 出荷準備完了時点で LogiOS が own_id → SHP-001 に紐づけ
   await wait(3000);
   logExchange("app01", "出荷完了", sid, {
     own_id: ownId, quantity: SHIPMENT_MASTER.quantity, status: "OK",
   });
-  return { ...SHIPMENT_MASTER, app: "app01", own_id: ownId, prev_ref: null };
+  return report;
 }
 
 async function runApp02(instruction) {
@@ -579,61 +590,73 @@ const APP_RUNNERS = { app02: runApp02, app03: runApp03, app04: runApp04, app05: 
 async function runSimulation() {
   if (simRunning) return;
   simRunning = true;
+  simGen++;
+  const myGen = simGen;
+  function live() { return simGen === myGen; }
 
-  setState("APP01_RUNNING");
-  const shipment = await runApp01();
-  appReports["app01"] = shipment;
-  setState("APP01_DONE");
+  try {
+    setState("APP01_RUNNING");
+    const shipment = await runApp01();
+    if (!live()) return;
+    appReports["app01"] = shipment;
+    setState("APP01_DONE");
 
-  setState("OS_PLANNING");
-  await wait(500);
-  const baseTime = new Date();
-  currentPlan = createPlan(shipment, baseTime);
-  logExchange("LogiOS", `輸送プラン作成完了（合計${currentPlan.total_estimated_minutes}分）`, shipment.shipment_id, {
-    plan_id: currentPlan.plan_id,
-  });
-  setState("OS_PLAN_READY");
-  await wait(500);
+    setState("OS_PLANNING");
+    await wait(500);
+    if (!live()) return;
+    const baseTime = new Date();
+    currentPlan = createPlan(shipment, baseTime);
+    logExchange("LogiOS", `輸送プラン作成完了（合計${currentPlan.total_estimated_minutes}分）`, shipment.shipment_id, {
+      plan_id: currentPlan.plan_id,
+    });
+    setState("OS_PLAN_READY");
+    await wait(500);
+    if (!live()) return;
 
-  onAppCompleted(shipment);
-  let prevRef = shipment.own_id;
+    let prevRef = shipment.own_id;
 
-  for (const leg of currentPlan.legs) {
-    const appKey = leg.app;
-    setState(`OS_INSTRUCTING_${appKey.toUpperCase()}`);
-    const instruction = logInstruction(appKey, leg, prevRef, shipment.shipment_id);
+    for (const leg of currentPlan.legs) {
+      const appKey = leg.app;
+      setState(`OS_INSTRUCTING_${appKey.toUpperCase()}`);
+      const instruction = logInstruction(appKey, leg, prevRef, shipment.shipment_id);
+      renderOsTab();
+
+      setState(`${appKey.toUpperCase()}_RUNNING`);
+      const report = await APP_RUNNERS[appKey](instruction);
+      if (!live()) return;
+      appReports[appKey] = report;
+      setState(`${appKey.toUpperCase()}_DONE`);
+
+      onAppCompleted(report);
+      prevRef = report.own_id;
+      renderOsTab();
+    }
+
+    // app07（着荷主）は ROUTES_MASTER 外なので明示的に実行
+    const lastPlanLeg = currentPlan.legs[currentPlan.legs.length - 1];
+    const app07Leg = {
+      leg_id: "LEG-07",
+      from: "東京都港区芝公園4-2-8",
+      to: "東京都港区芝公園4-2-8（東京タワー）",
+      arrival_time: lastPlanLeg.arrival_time,
+    };
+    setState("OS_INSTRUCTING_APP07");
+    const app07Instruction = logInstruction("app07", app07Leg, prevRef, shipment.shipment_id);
     renderOsTab();
 
-    setState(`${appKey.toUpperCase()}_RUNNING`);
-    const report = await APP_RUNNERS[appKey](instruction);
-    appReports[appKey] = report;
-    setState(`${appKey.toUpperCase()}_DONE`);
+    setState("APP07_RUNNING");
+    const app07Report = await runApp07(app07Instruction);
+    if (!live()) return;
+    appReports["app07"] = app07Report;
+    setState("APP07_DONE");
+    onAppCompleted(app07Report);
 
-    onAppCompleted(report);
-    prevRef = report.own_id;
-    renderOsTab();
+    setState("ALL_DONE");
+  } catch(e) {
+    if (!e.cancelled) console.error(e);
+  } finally {
+    if (live()) simRunning = false;
   }
-
-  // app07（着荷主）は ROUTES_MASTER 外なので明示的に実行
-  const lastPlanLeg = currentPlan.legs[currentPlan.legs.length - 1];
-  const app07Leg = {
-    leg_id: "LEG-07",
-    from: "東京都港区芝公園4-2-8",
-    to: "東京都港区芝公園4-2-8（東京タワー）",
-    arrival_time: lastPlanLeg.arrival_time,
-  };
-  setState("OS_INSTRUCTING_APP07");
-  const app07Instruction = logInstruction("app07", app07Leg, prevRef, shipment.shipment_id);
-  renderOsTab();
-
-  setState("APP07_RUNNING");
-  const app07Report = await runApp07(app07Instruction);
-  appReports["app07"] = app07Report;
-  setState("APP07_DONE");
-  onAppCompleted(app07Report);
-
-  setState("ALL_DONE");
-  simRunning = false;
 }
 
 function setState(s) {
@@ -1102,6 +1125,7 @@ function switchTab(tabId) {
 }
 
 function restart() {
+  simGen++;          // 実行中シミュレーションの wait() を全てキャンセル
   simRunning   = false;
   exchangeLog  = [];
   appReports   = {};
@@ -1116,7 +1140,10 @@ function restart() {
   setTimeout(() => runSimulation(), 100);
 }
 
+let initDone = false;
 function init() {
+  if (initDone) return;
+  initDone = true;
   document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
